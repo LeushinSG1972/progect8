@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор кубатуры досок</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px auto;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .dimension {
+            font-weight: bold;
+            background-color: #e6e6e6;
+        }
+        .input-cell {
+            background-color: #fffacd;
+        }
+        .total {
+            font-weight: bold;
+            background-color: #e6f7ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>Калькулятор кубатуры досок</h1>
+    
+    <table id="calculator">
+        <thead>
+            <tr>
+                <th>Размер (мм)</th>
+                <th>6 метров</th>
+                <th>5 метров</th>
+                <th>4 метра</th>
+                <th>3 метра</th>
+                <th>Итого (м³)</th>
+            </tr>
+        </thead>
+        <tbody id="calculator-body">
+            <!-- Таблица будет заполнена JavaScript -->
+        </tbody>
+    </table>
+
+    <div style="text-align: center; margin-top: 20px;">
+        <button onclick="calculateTotal()">Рассчитать общий объем</button>
+        <button onclick="resetCalculator()">Сбросить</button>
+        <div id="total-result" style="margin-top: 10px; font-weight: bold;"></div>
+    </div>
+
+    <script>
+        // Размеры досок
+        const boardSizes = [
+            '60×150', '50×150', '50×120', '50×100',
+            '45×200', '45×180', '45×150', '45×120', '45×100'
+        ];
+        
+        // Длины досок в метрах
+        const boardLengths = [6, 5, 4, 3];
+        
+        // Создаем таблицу
+        function createCalculator() {
+            const tbody = document.getElementById('calculator-body');
+            tbody.innerHTML = '';
+            
+            boardSizes.forEach(size => {
+                const row = document.createElement('tr');
+                
+                // Ячейка с размером доски
+                const sizeCell = document.createElement('td');
+                sizeCell.textContent = size;
+                sizeCell.className = 'dimension';
+                row.appendChild(sizeCell);
+                
+                // Ячейки для ввода количества досок
+                boardLengths.forEach(length => {
+                    const inputCell = document.createElement('td');
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0';
+                    input.style.width = '50px';
+                    input.dataset.size = size;
+                    input.dataset.length = length;
+                    input.className = 'input-cell';
+                    inputCell.appendChild(input);
+                    row.appendChild(inputCell);
+                });
+                
+                // Ячейка для отображения итогового объема по строке
+                const totalCell = document.createElement('td');
+                totalCell.className = 'total';
+                totalCell.dataset.size = size;
+                totalCell.textContent = '0.000';
+                row.appendChild(totalCell);
+                
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Рассчитываем объем для строки
+        function calculateRowTotal(row) {
+            const size = row.querySelector('.total').dataset.size;
+            const [thickness, width] = size.split('×').map(Number);
+            
+            let rowTotal = 0;
+            
+            boardLengths.forEach(length => {
+                const input = row.querySelector(`input[data-length="${length}"]`);
+                const quantity = Number(input.value) || 0;
+                
+                // Рассчитываем объем в кубометрах
+                const volume = (thickness * width * length * quantity) / 1000000;
+                rowTotal += volume;
+            });
+            
+            row.querySelector('.total').textContent = rowTotal.toFixed(3);
+            return rowTotal;
+        }
+        
+        // Рассчитываем общий объем
+        function calculateTotal() {
+            const rows = document.querySelectorAll('#calculator-body tr');
+            let grandTotal = 0;
+            
+            rows.forEach(row => {
+                grandTotal += calculateRowTotal(row);
+            });
+            
+            document.getElementById('total-result').textContent = `Общий объем: ${grandTotal.toFixed(3)} м³`;
+        }
+        
+        // Сбрасываем калькулятор
+        function resetCalculator() {
+            const inputs = document.querySelectorAll('#calculator-body input');
+            inputs.forEach(input => {
+                input.value = '';
+            });
+            
+            const totals = document.querySelectorAll('#calculator-body .total');
+            totals.forEach(total => {
+                total.textContent = '0.000';
+            });
+            
+            document.getElementById('total-result').textContent = '';
+        }
+        
+        // Инициализируем калькулятор при загрузке страницы
+        window.onload = createCalculator;
+    </script>
+Леушин С.Г.  lsg21011972@gmail.com
+</body>
+</html>
