@@ -44,6 +44,25 @@
             font-weight: bold;
             background-color: #e6f7ff;
         }
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 8px 15px;
+            margin: 0 5px;
+            cursor: pointer;
+        }
+        .result-display {
+            margin-top: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .memory-display {
+            margin-top: 5px;
+            color: #666;
+            font-style: italic;
+        }
     </style>
 </head>
 <body>
@@ -65,10 +84,12 @@
         </tbody>
     </table>
 
-    <div style="text-align: center; margin-top: 20px;">
-        <button onclick="calculateTotal()">Рассчитать общий объем</button>
+    <div class="buttons">
+        <button onclick="calculateTotal()">= Рассчитать</button>
+        <button onclick="addToMemory()">+ Добавить к итогу</button>
         <button onclick="resetCalculator()">Сбросить</button>
-        <div id="total-result" style="margin-top: 10px; font-weight: bold;"></div>
+        <div id="memory-display" class="memory-display"></div>
+        <div id="total-result" class="result-display"></div>
     </div>
 
     <script>
@@ -80,6 +101,9 @@
         
         // Длины досок в метрах
         const boardLengths = [6, 5, 4, 3];
+        
+        // Переменная для хранения накопленного объема
+        let memoryVolume = 0;
         
         // Создаем таблицу
         function createCalculator() {
@@ -118,6 +142,8 @@
                 
                 tbody.appendChild(row);
             });
+            
+            updateMemoryDisplay();
         }
         
         // Рассчитываем объем для строки
@@ -143,17 +169,48 @@
         // Рассчитываем общий объем
         function calculateTotal() {
             const rows = document.querySelectorAll('#calculator-body tr');
-            let grandTotal = 0;
+            let currentTotal = 0;
             
             rows.forEach(row => {
-                grandTotal += calculateRowTotal(row);
+                currentTotal += calculateRowTotal(row);
             });
             
-            document.getElementById('total-result').textContent = `Общий объем: ${grandTotal.toFixed(3)} м³`;
+            const totalWithMemory = currentTotal + memoryVolume;
+            
+            if (memoryVolume > 0) {
+                document.getElementById('total-result').innerHTML = 
+                    `Текущий объем: ${currentTotal.toFixed(3)} м³<br>
+                     Суммарный объем: ${totalWithMemory.toFixed(3)} м³ (${memoryVolume.toFixed(3)} + ${currentTotal.toFixed(3)})`;
+            } else {
+                document.getElementById('total-result').textContent = 
+                    `Общий объем: ${currentTotal.toFixed(3)} м³`;
+            }
+            
+            return currentTotal;
+        }
+        
+        // Добавляем текущий расчет к памяти
+        function addToMemory() {
+            const currentTotal = calculateTotal();
+            memoryVolume += currentTotal;
+            updateMemoryDisplay();
+            resetCalculator(false); // Очищаем без сброса памяти
+            document.getElementById('total-result').textContent = 
+                `Добавлено: ${currentTotal.toFixed(3)} м³ | Накопленный объем: ${memoryVolume.toFixed(3)} м³`;
+        }
+        
+        // Обновляем отображение накопленного объема
+        function updateMemoryDisplay() {
+            const display = document.getElementById('memory-display');
+            if (memoryVolume > 0) {
+                display.textContent = `Накопленный объем: ${memoryVolume.toFixed(3)} м³`;
+            } else {
+                display.textContent = '';
+            }
         }
         
         // Сбрасываем калькулятор
-        function resetCalculator() {
+        function resetCalculator(fullReset = true) {
             const inputs = document.querySelectorAll('#calculator-body input');
             inputs.forEach(input => {
                 input.value = '';
@@ -164,12 +221,15 @@
                 total.textContent = '0.000';
             });
             
-            document.getElementById('total-result').textContent = '';
+            if (fullReset) {
+                memoryVolume = 0;
+                updateMemoryDisplay();
+                document.getElementById('total-result').textContent = '';
+            }
         }
         
         // Инициализируем калькулятор при загрузке страницы
         window.onload = createCalculator;
     </script>
-Леушин С.Г.  lsg21011972@gmail.com
 </body>
 </html>
